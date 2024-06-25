@@ -1,0 +1,35 @@
+{
+  "name":"jakiboy/vanilleplugin-license",
+  "version":"1.0.0",
+  "type":"library",
+  "description":"Add licensing system for VanillePlugin",
+  "keywords":[
+    "VanillePlugin",
+    "WordPress",
+    "WordPress-License",
+    "WordPress-Plugin",
+    "WordPress-Plugin-Framework",
+    "Boilerplate"
+  ],
+  "homepage":"https://jakiboy.github.io/vanilleplugin-License/",
+  "license":"MIT",
+  "authors":[
+    {
+      "name":"Jihad Sinnaour",
+      "email":"mail@jihadsinnaour.com",
+      "role":"Founder"
+    }
+  ],
+  "require":{
+    "php":">=7.4",
+    "jakiboy/vanilleplugin":"^1.0.7"
+  },
+  "autoload":{
+    "psr-4":{
+      "VanilleLicense\\":"src/"
+    }
+  },
+  "suggest":{
+    "jakiboy/vanilleplugin-packager":"Composer Namespaces Prefixer for WordPress Plugins"
+  }
+}
