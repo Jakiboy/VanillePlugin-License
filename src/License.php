@@ -14,6 +14,8 @@ declare(strict_types=1);
 
 namespace VanilleLicense;
 
+use VanilleLicense\inc\Webservice;
+
 class License extends Webservice
 {
 	use \VanillePlugin\tr\TraitDatable;
@@ -86,21 +88,35 @@ class License extends Webservice
 	 * Load license file.
 	 *
 	 * @access public
-	 * @return void
+	 * @param bool $force
+	 * @param string $file
+	 * @return bool
 	 */
-	public function load()
+	public function load(bool $force = false, ?string $file = null) : bool
 	{
-		$license = $this->getRoot('/.license');
-		if ( $this->isReadable($license, true) ) {
-			$token = $this->readFile($license);
+		if ( !$force && !$this->isNew() ) {
+			return false;
+		}
+
+		if ( !$file ) {
+			$file = $this->getRoot('.license');
+		}
+
+		if ( $this->isReadable($file, true) ) {
+
+			$token = $this->readFile($file);
 			$data  = $this->getCredentials();
 			$data['token'] = (string)$token;
+
 			if ( $this->setCredentials($data) ) {
+				$this->removeFile($file, $this->getRoot());
 				$this->auth = $data;
-				$this->isValid();
-				$this->removeFile($license);
+				return $this->isValid();
 			}
+
 		}
+
+		return false;
 	}
 
 	/**
@@ -115,6 +131,17 @@ class License extends Webservice
 		$this->auth = $this->parseCredentials();
 		$status = $this->isValid($data);
 		return $data;
+	}
+
+	/**
+	 * Validate license.
+	 *
+	 * @access public
+	 * @return bool
+	 */
+	public function validate() : bool
+	{
+		return $this->isValid();
 	}
 
 	/**
@@ -158,7 +185,7 @@ class License extends Webservice
 			// Version error
 			$content = $data['content'] ?? [];
 			$content = $this->mergeArray(static::CONTENT, $content);
-			
+
 			if ( $content['version'] == 'api' ) {
 				$this->disable(static::MESSAGE['invalid-version']);
 				return false;
@@ -273,6 +300,17 @@ class License extends Webservice
 	}
 
 	/**
+	 * Check whether plugin is licensed (Alias).
+	 *
+	 * @access public
+	 * @return bool
+	 */
+	public function isLicensed() : bool
+	{
+		return (!$this->isExpired() && !$this->isNew());
+	}
+
+	/**
 	 * Reset license data.
 	 *
 	 * @access public
@@ -281,7 +319,7 @@ class License extends Webservice
 	public function reset() : bool
 	{
 		$this->deletePluginTransient('license-error');
-		$this->setCredentials(static::CREDENTIALS);
+		$this->resetPluginOption('activation');
 		return $this->setData(static::CONTENT);
 	}
 	
@@ -333,7 +371,8 @@ class License extends Webservice
 	 */
 	protected function parseCredentials() : array
 	{
-		$data = $this->getHttpPost(static::OPTION, true);
+		$data = $this->getHttpPost(static::OPTION) ?: [];
+		$data = $this->applyPluginFilter('credentials', $data);
 		$this->updatePluginOption(static::OPTION, $data, static::MULTI);
 		return (array)$data;
 	}
@@ -347,6 +386,7 @@ class License extends Webservice
 	 */
 	protected function setCredentials(array $data) : bool
 	{
+		$data = $this->applyPluginFilter('credentials', $data);
 		return $this->updatePluginOption(static::OPTION, $data, static::MULTI);
 	}
 

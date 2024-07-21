@@ -12,7 +12,7 @@
 
 declare(strict_types=1);
 
-namespace VanilleLicense;
+namespace VanilleLicense\inc;
 
 use VanillePlugin\lib\API;
 
@@ -39,9 +39,21 @@ class Webservice extends API
 	];
 	protected const ERROR   = [];
 	protected const CONTENT = [];
-	
+
 	/**
-	 * Init Webservice request.
+	 * Get webservice base URL.
+	 *
+	 * @access public
+	 * @return string
+	 */
+	public function getBaseUrl() : string
+	{
+		$url = self::HOST ?: self::BACKUP;
+		return $this->parseBaseUrl((string)$url);
+	}
+
+	/**
+	 * Init webservice request.
 	 * [Filter: {plugin}-webservice-timeout].
 	 *
 	 * @access protected
